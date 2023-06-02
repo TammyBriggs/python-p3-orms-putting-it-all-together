@@ -31,13 +31,22 @@ class Dog:
         CURSOR.execute(sql)
 
     def save(self):
-        sql = """
-            INSERT INTO dogs (name, breed)
-            VALUES (?, ?)
-        """
+        if self.id is None:
+            sql = """
+                INSERT INTO dogs (name, breed)
+                VALUES (?, ?)
+            """
 
-        CURSOR.execute(sql, (self.name, self.breed))
-        self.id = CURSOR.lastrowid
+            CURSOR.execute(sql, (self.name, self.breed))
+            self.id = CURSOR.lastrowid
+        else:
+            sql = """
+                UPDATE dogs
+                SET name = ?
+                WHERE id = ?
+            """
+
+            CURSOR.execute(sql, (self.name, self.id))
 
     @classmethod
     def create(cls, name, breed):
@@ -81,5 +90,26 @@ class Dog:
         if row is not None:
             return cls.new_from_db(row)
         return None
+    
+    #Bonus Deliverables
+    @classmethod
+    def find_or_create_by(cls, name, breed):
+        dog = cls.find_by_name(name)
+        if dog is not None:
+            return dog
+        return cls.create(name, breed)
+    
+    def update(self):
+        if self.id is not None:
+            sql = """
+                UPDATE dogs
+                SET name = ?
+                WHERE id = ?
+            """
 
+            CURSOR.execute(sql, (self.name, self.id))
+            CONN.commit()
+            return True
+        return False
+    
     pass
